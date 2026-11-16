@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from playwright.sync_api import expect
 
+from unifi_tests.metrics import metrics
 from unifi_tests.ui.pages.base import BasePage
 
 
@@ -9,6 +10,7 @@ class ConsolePage(BasePage):
     """Any page of the logged-in UniFi OS console: header with the profile (avatar) button."""
 
     path = "/"
+    name = "console"
 
     @property
     def profile_button(self):
@@ -33,4 +35,6 @@ class ConsolePage(BasePage):
 
     def logout(self) -> None:
         self.profile_button.click()
-        self.profile_menu.get_by_role("link", name="Sign Out").click()
+        with metrics.measure("click Sign Out -> login page"):
+            self.profile_menu.get_by_role("link", name="Sign Out").click()
+            expect(self.page.get_by_role("button", name="Sign In")).to_be_visible()

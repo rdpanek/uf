@@ -3,12 +3,14 @@ from __future__ import annotations
 from playwright.sync_api import expect
 
 from unifi_tests.config import Credentials
+from unifi_tests.metrics import metrics
 from unifi_tests.mfa import current_totp
 from unifi_tests.ui.pages.base import BasePage
 
 
 class LoginPage(BasePage):
     path = "/login"
+    name = "login"
 
     @property
     def username(self):
@@ -40,9 +42,19 @@ class LoginPage(BasePage):
         self.expect_loaded()
         self.username.fill(credentials.username)
         self.password.fill(credentials.password)
-        self.sign_in.click()
         if credentials.totp_secret:
+            with metrics.measure("click Sign In -> MFA screen"):
+                self.sign_in.click()
+                expect(self.mfa_screen).to_be_visible()
             self.enter_mfa_code(current_totp(credentials.totp_secret))
+        else:
+            with metrics.measure("click Sign In -> console"):
+                self.sign_in.click()
+                self.expect_console_shown()
+
+    def expect_console_shown(self) -> None:
+        # The console has a top banner (header bar); the login screens do not
+        expect(self.page.get_by_role("banner")).to_be_visible(timeout=30_000)
 
     def enter_mfa_code(self, code: str) -> None:
         expect(self.mfa_screen).to_be_visible()
@@ -50,3 +62,5 @@ class LoginPage(BasePage):
         self.mfa_digits.first.click()
         # Typed key by key, like a user, so the boxes advance and the form submits itself
         self.page.keyboard.type(code, delay=80)
+        with metrics.measure("MFA code entered -> console"):
+            self.expect_console_shown()

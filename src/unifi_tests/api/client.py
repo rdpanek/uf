@@ -9,6 +9,7 @@ Design:
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 import requests
@@ -18,10 +19,12 @@ from unifi_tests.api import endpoints
 from unifi_tests.api.errors import ApiError, UniFiError, redact
 from unifi_tests.config import Credentials
 from unifi_tests.data import LocalUser
+from unifi_tests.metrics import metrics
 from unifi_tests.mfa import current_totp
 
 log = logging.getLogger("unifi.api")
 
+_ID_IN_PATH = re.compile(r"/[0-9a-f]{8}-[0-9a-f-]{27,}")
 CSRF_HEADERS = ("x-updated-csrf-token", "x-csrf-token")
 SUPER_ADMIN = "super_administrator"
 
@@ -56,6 +59,10 @@ class UniFiOSClient:
         )
         self._remember_csrf(response)
         log.info("  -> %s %s", response.status_code, response.reason)
+        # ids replaced so all calls of one endpoint end up in one metric series
+        metrics.record(
+            "api", f"{method} {_ID_IN_PATH.sub('/{id}', path)}", response.elapsed.total_seconds()
+        )
         allowed = expected if isinstance(expected, tuple) else (expected,)
         if response.status_code not in allowed:
             raise ApiError(response, expected)

@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 1s   # short tests: scrape often so every measurement is captured
+
+scrape_configs:
+  - job_name: pushgateway
+    honor_labels: true   # keep job/run_id/test labels as pushed by the tests
+    static_configs:
+      - targets: ["pushgateway:9091"]

@@ -3,6 +3,7 @@ from __future__ import annotations
 from playwright.sync_api import expect
 
 from unifi_tests.data import LocalUser
+from unifi_tests.metrics import metrics
 from unifi_tests.ui.pages.base import BasePage
 
 
@@ -10,6 +11,7 @@ class UsersPage(BasePage):
     """UniFi OS > Admins & Users (lives under the Network application)."""
 
     path = "/network/default/admins/users"
+    name = "admins & users"
 
     @property
     def create_new(self):
@@ -40,7 +42,9 @@ class UsersPage(BasePage):
         # (the others are hidden decoys against browser autofill).
         form.locator("input[type=text][autocomplete=off]").fill(user.username)
         form.locator("input[type=password][autocomplete=off]").fill(user.password)
-        form.get_by_role("button", name="Create", exact=True).click()
+        with metrics.measure("click Create -> user listed"):
+            form.get_by_role("button", name="Create", exact=True).click()
+            self.expect_user_listed(user)
 
     def expect_user_listed(self, user: LocalUser) -> None:
         expect(self.page.get_by_text(user.full_name, exact=True)).to_be_visible()

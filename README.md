@@ -62,8 +62,32 @@ All settings come from environment variables or a git-ignored `.env` file (see `
 | `UNIFI_LOCAL_USER_PASSWORD` | optional, otherwise a strong random password per user |
 | `UNIFI_VERIFY_TLS` | `false` for the default self-signed certificate |
 | `UNIFI_RECORD_HAR` | optional, `1` records the UI's API calls to `reports/network.har` |
+| `UNIFI_PUSHGATEWAY_URL` | optional, e.g. `http://localhost:9091` sends live metrics to the monitoring stack |
 
 A missing variable stops the run immediately with a message that names it.
+
+## Live metrics in Grafana (optional)
+
+The tests can stream timings to a local Prometheus + Grafana stack while they run:
+
+```bash
+make monitoring-up      # Docker: Pushgateway :9091, Prometheus :9090, Grafana :3000
+make test-live          # same as make test, with UNIFI_PUSHGATEWAY_URL=http://localhost:9091
+open http://localhost:3000
+make monitoring-down
+```
+
+What is measured (metric `unifi_test_duration_seconds`, label `kind`):
+
+| kind | Examples |
+|---|---|
+| `step` | every named test step, e.g. `3. Admin logs out` |
+| `event` | UI performance: `page load: login` (Navigation Timing), `click Sign In -> MFA screen`, `MFA code entered -> console`, `click Create -> user listed`, `click Sign Out -> login page` |
+| `api` | every REST call, e.g. `POST /api/auth/login`, `DELETE /proxy/users/api/v2/user/{id}` |
+
+The dashboard "UniFi OS tests" shows the durations live and a table with min / avg / max per name
+over the selected time range. Without `UNIFI_PUSHGATEWAY_URL` nothing is sent and the tests run as usual;
+the timings are still printed in the log and the HTML report.
 
 ## Lint
 

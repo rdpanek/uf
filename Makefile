@@ -1,4 +1,4 @@
-.PHONY: install test test-api test-e2e test-e2e-headed lint report
+.PHONY: install test test-api test-e2e test-e2e-headed lint report monitoring-up monitoring-down test-live
 
 install:
 	python3 -m venv .venv
@@ -23,3 +23,14 @@ lint:
 
 report:
 	open reports/report.html || xdg-open reports/report.html
+
+# Live metrics: Prometheus + Pushgateway + Grafana (needs Docker)
+monitoring-up:
+	docker compose -f monitoring/docker-compose.yml up -d
+	@echo "Grafana: http://localhost:3000  (dashboard 'UniFi OS tests')"
+
+monitoring-down:
+	docker compose -f monitoring/docker-compose.yml down
+
+test-live:
+	UNIFI_PUSHGATEWAY_URL=http://localhost:9091 .venv/bin/pytest

@@ -11,6 +11,7 @@ dependencies = [
     "pytest-playwright>=0.6",
     "pytest-html>=4.1",
     "pytest-rerunfailures>=15.0",
+    "prometheus-client>=0.21",
 ]
 
 [project.optional-dependencies]

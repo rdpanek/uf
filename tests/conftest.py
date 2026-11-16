@@ -10,6 +10,7 @@ import pytest
 from unifi_tests.api.client import UniFiOSClient
 from unifi_tests.config import ConfigError, Settings
 from unifi_tests.data import LocalUser, new_local_user
+from unifi_tests.metrics import metrics
 
 log = logging.getLogger("unifi.fixtures")
 
@@ -17,9 +18,16 @@ log = logging.getLogger("unifi.fixtures")
 @pytest.fixture(scope="session")
 def settings() -> Settings:
     try:
-        return Settings.from_env()
+        loaded = Settings.from_env()
     except ConfigError as exc:
         pytest.exit(str(exc), returncode=2)
+    if metrics.enabled:
+        log.info("live metrics: pushing to %s (run_id=%s)", metrics.gateway_url, metrics.run_id)
+    return loaded
+
+
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+    metrics.finish()
 
 
 @pytest.fixture
