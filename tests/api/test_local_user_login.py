@@ -18,7 +18,7 @@ def test_admin_creates_local_user_who_can_log_in(api, settings, local_user_facto
         admin_info = api.login(settings.admin)
         assert api.is_authenticated(), f"admin session not established: {admin_info}"
 
-    with step(f"2. Admin creates local user '{user.username}'"):
+    with step("2. Admin creates a local user"):
         api.create_local_user(user)
         assert user.id, "create user response did not contain an id"
 
@@ -26,7 +26,7 @@ def test_admin_creates_local_user_who_can_log_in(api, settings, local_user_facto
         api.logout()
         assert not api.is_authenticated(), "session is still valid after logout"
 
-    with step(f"4. Local user '{user.username}' logs in"):
+    with step("4. The local user logs in"):
         api.login(Credentials(user.username, user.password))
         me = api.current_user()
         assert me.get("username") == user.username, (

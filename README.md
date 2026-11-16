@@ -85,9 +85,17 @@ What is measured (metric `unifi_test_duration_seconds`, label `kind`):
 | `event` | UI performance: `page load: login` (Navigation Timing), `click Sign In -> MFA screen`, `MFA code entered -> console`, `click Create -> user listed`, `click Sign Out -> login page` |
 | `api` | every REST call, e.g. `POST /api/auth/login`, `DELETE /proxy/users/api/v2/user/{id}` |
 
+![Grafana dashboard "UniFi OS tests"](docs/grafana-dashboard.png)
+
 The dashboard "UniFi OS tests" shows the durations live and a table with min / avg / max per name
 over the selected time range. Without `UNIFI_PUSHGATEWAY_URL` nothing is sent and the tests run as usual;
 the timings are still printed in the log and the HTML report.
+
+## Smoke run
+
+```bash
+caffeinate -i bash -c 'end=$((SECONDS+1800)); n=0; while [ $SECONDS -lt $end ]; do n=$((n+1)); echo "=== run $n ==="; make test-live; sleep 15; done'
+```
 
 ## Lint
 

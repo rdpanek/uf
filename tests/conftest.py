@@ -58,6 +58,9 @@ def local_user_factory(
 
     def factory() -> LocalUser:
         user = new_local_user(password=settings.local_user_password)
+        # Logged here, not in step names: step names must stay the same in every run,
+        # otherwise each run would be a new series in Grafana
+        log.info("test user for this test: %s", user.username)
         created.append(user)
         return user
 

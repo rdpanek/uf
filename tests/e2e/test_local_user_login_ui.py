@@ -21,7 +21,7 @@ def test_admin_creates_local_user_who_can_log_in_ui(
         login_page.login(settings.admin)
         console.expect_logged_in()
 
-    with step(f"2. Admin creates local user '{user.username}' in Admins & Users"):
+    with step("2. Admin creates a local user in Admins & Users"):
         users_page.open()
         users_page.create_local_user(user)
         users_page.expect_user_listed(user)
@@ -30,6 +30,6 @@ def test_admin_creates_local_user_who_can_log_in_ui(
         console.logout()
         login_page.expect_loaded()
 
-    with step(f"4. Local user '{user.username}' logs in"):
+    with step("4. The local user logs in"):
         login_page.login(Credentials(user.username, user.password))
         console.expect_logged_in_as(user.full_name)

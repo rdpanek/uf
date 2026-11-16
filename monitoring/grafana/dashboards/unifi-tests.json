@@ -90,7 +90,7 @@
             "lineWidth": 2,
             "pointSize": 5,
             "showPoints": "always",
-            "spanNulls": false
+            "spanNulls": true
           }
         },
         "overrides": []
