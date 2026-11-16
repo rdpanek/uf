@@ -1,0 +1,58 @@
+[project]
+name = "unifi-os-tests"
+version = "0.1.0"
+description = "API (pytest) and E2E (Playwright) tests for a self-hosted UniFi OS Server"
+requires-python = ">=3.11"
+dependencies = [
+    "pytest>=8.3",
+    "requests>=2.32",
+    "pyotp>=2.9",
+    "python-dotenv>=1.0",
+    "pytest-playwright>=0.6",
+    "pytest-html>=4.1",
+    "pytest-rerunfailures>=15.0",
+]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.8"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "api: REST API tests (fast, no browser)",
+    "e2e: Playwright end-to-end tests through the UniFi OS web UI",
+]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--html=reports/report.html",
+    "--self-contained-html",
+    # Playwright artefacts are kept only for failed tests, so a red run is easy to debug.
+    "--tracing=retain-on-failure",
+    "--screenshot=only-on-failure",
+    "--video=retain-on-failure",
+    "--output=reports/playwright",
+]
+filterwarnings = [
+    # Raised by the pytest-playwright plugin itself (its base_url fixture), not by this project
+    "ignore:Session-scoped fixtures defined as instance methods are deprecated",
+    # Expected with the console's self-signed certificate (UNIFI_VERIFY_TLS=false)
+    "ignore::urllib3.exceptions.InsecureRequestWarning",
+]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s %(levelname)-7s %(name)s: %(message)s"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "PT"]

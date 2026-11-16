@@ -1,0 +1,21 @@
+"""Named test steps: they show up in the console log and in the HTML report,
+so a failure reads as 'failed in step 3: Logout' rather than a bare traceback."""
+
+from __future__ import annotations
+
+import logging
+from collections.abc import Iterator
+from contextlib import contextmanager
+
+log = logging.getLogger("unifi.steps")
+
+
+@contextmanager
+def step(title: str) -> Iterator[None]:
+    log.info("STEP: %s", title)
+    try:
+        yield
+    except BaseException as exc:
+        log.error("STEP FAILED: %s", title)
+        exc.add_note(f"Failed in step: {title}")
+        raise
